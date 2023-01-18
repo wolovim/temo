@@ -1,0 +1,17 @@
+name: temo
+
+plugins:
+  - name: solidity
+  - name: hardhat
+
+dependencies:
+  - name: OpenZeppelin
+    github: OpenZeppelin/openzeppelin-contracts
+    version: 4.8.0
+
+solidity:
+  import_remapping:
+    - "@openzeppelin=OpenZeppelin/4.8.0"
+
+hardhat:
+  port: 8545
