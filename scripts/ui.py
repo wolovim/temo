@@ -15,26 +15,17 @@ def main(cli_ctx):
     #  account = get_user_selected_account()
     account = cli_ctx.account_manager.test_accounts[0]
 
-    # lol, hardhat workaround to fund ape-native test account
     # TODO: try with hh config deleted
     networks.active_provider.set_balance(account.address, 10000000000000000000000)
 
-    d = account.deploy(project.FungibleDemo)
-    e = account.deploy(project.NftDemo)
+    deployed_erc20 = account.deploy(project.FungibleDemo)
+    deployed_erc721 = account.deploy(project.NftDemo)
 
-    # TODO: pass along...
-    #   - network?
-    #   - w3 instance?
-    x = {
+    deploy_data = {
         'account': account,
         'provider': networks.active_provider,
-        'nft_contract': e,
-        'token_contract': d,
+        'nft_contract': deployed_erc721,
+        'token_contract': deployed_erc20,
     }
 
-    # TODO: grab/display each method off each contract
-    #   - off web3 or ape?
-
-    #  import pdb; pdb.set_trace() # noqa
-    # ABI? d.contract_type.abi
-    Temo(contracts=x).run()
+    Temo(deploy_data=deploy_data).run()

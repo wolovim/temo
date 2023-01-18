@@ -8,6 +8,7 @@ Screen {
   color: $text;
   border: tall $background;
   padding: 1 2;
+  max-width: 100;
 }
 
 #search-ui {

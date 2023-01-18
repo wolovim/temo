@@ -64,11 +64,11 @@ class Temo(App):
     current_block = reactive("fetching...")
     total_supply = reactive("fetching...")
 
-    def __init__(self, contracts):
-        self.nft_contract = contracts["nft_contract"]
-        self.token_contract = contracts["token_contract"]
-        self.account = contracts["account"]
-        self.provider = contracts["provider"]
+    def __init__(self, deploy_data):
+        self.nft_contract = deploy_data["nft_contract"]
+        self.token_contract = deploy_data["token_contract"]
+        self.account = deploy_data["account"]
+        self.provider = deploy_data["provider"]
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -76,7 +76,7 @@ class Temo(App):
         yield Container(
             Static(Markdown("#### Current block:")),
             Static("loading...", id="cblk"),
-            classes="box"
+            classes="box",
         )
 
         yield Container(
@@ -84,10 +84,10 @@ class Temo(App):
             Horizontal(
                 Input(placeholder="Search for an account", id="search-input"),
                 Button("Search", variant="primary", id="search"),
-                id="search-ui"
+                id="search-ui",
             ),
-            Static(id="results"),
-            classes="box"
+            Static(id="account-results"),
+            classes="box",
         )
 
         # token contract:
@@ -95,15 +95,15 @@ class Temo(App):
             Static(Markdown("#### Contract")),
             Label(f"Name: {self.token_contract.name()}"),
             Static("Loading total supply...", id="tsupply"),
-            Button("Mint!", variant="primary"),
-            classes="box"
+            Button("Mint!", variant="primary", id="mint-erc20"),
+            classes="box",
         )
 
         # nft contract:
         yield Container(
             Static(Markdown("#### Contract")),
             Label(f"Name: {self.nft_contract.name()}"),
-            classes="box"
+            classes="box",
         )
     
     async def on_mount(self) -> None:
@@ -113,8 +113,8 @@ class Temo(App):
         ipt.value = self.account.address
         ipt.focus()
         asyncio.create_task(self.lookup_account(self.account.address))
-        self.set_interval(3, self.update_current_block)
-        self.set_interval(3, self.update_total_supply)
+        self.set_interval(4, self.update_current_block)
+        self.set_interval(4, self.update_total_supply)
 
     def update_current_block(self) -> None:
         """Method to update the current block."""
@@ -133,47 +133,46 @@ class Temo(App):
 
     async def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "search":
-            pass
-            # lookup
-        else:
+            asyncio.create_task(self.lookup_account(self.query_one(Input).value))
+        elif event.button.id == "mint-erc20":
             self.token_contract.mint(self.account.address, 1000, sender=self.account)
+        else:
+            self.exit()
 
     def on_total_supply_changed(self, total_supply) -> None:
         self.query_one("#tsupply", Static).update(f"Total supply: {total_supply}")
 
-    # TODO: change to search button based lookup
-    async def on_input_changed(self, message: Input.Changed) -> None:
-        """A coroutine to handle a text changed message."""
-        if message.value:
-            # Look up the account in the background
-            asyncio.create_task(self.lookup_account(message.value))
-        else:
-            # Clear the results
-            self.query_one("#results", Static).update()
-
-    async def lookup_account(self, account: str) -> None:
-        """Looks up an account."""
+    async def lookup_account(self, address: str) -> None:
+        """Looks up an address."""
         result = {}
+        w3 = self.w3
+        try:
+            # ensure checksummed address
+            address = w3.toChecksumAddress(address)
+            ipt = self.query_one(Input)
+            ipt.value = address
 
-        # get balance
-        result["bal"] = self.w3.from_wei(self.account.balance, 'ether')
+            # get balance
+            balance = await asyncio.create_task(w3.eth.get_balance(address))
+            result["bal"] = w3.from_wei(balance, 'ether')
 
-        # get tx count
-        result["tx_count"] = self.account.nonce
+            # get nonce
+            nonce = await asyncio.create_task(w3.eth.get_transaction_count(address))
+            result["tx_count"] = nonce
 
-        if account == self.query_one(Input).value:
             markdown = self.make_account_markdown(result)
-            self.query_one("#results", Static).update(Markdown(markdown))
+            self.query_one("#account-results", Static).update(Markdown(markdown))
+        except:
+            self.query_one("#account-results", Static).update(Markdown("- (No results)"))
 
     def make_account_markdown(self, results: object) -> str:
         """Convert the results in to markdown."""
         lines = []
         lines.append(f"- balance: {results['bal']} ether")
         lines.append(f"- tx count: {results['tx_count']}")
-
         return "\n".join(lines)
 
 
-if __name__ == "__main__":
-    app = Temo()
-    app.run()
+#  if __name__ == "__main__":
+    #  app = Temo()
+    #  app.run()
