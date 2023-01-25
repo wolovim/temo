@@ -15,8 +15,8 @@ def main(cli_ctx):
     #  account = get_user_selected_account()
     account = cli_ctx.account_manager.test_accounts[0]
 
-    # TODO: try with hh config deleted
-    networks.active_provider.set_balance(account.address, 10000000000000000000000)
+    # for testing: hardhat set balance
+    #  networks.active_provider.set_balance(account.address, 10000000000000000000000)
 
     deployed_erc20 = account.deploy(project.FungibleDemo)
     deployed_erc721 = account.deploy(project.NftDemo)
