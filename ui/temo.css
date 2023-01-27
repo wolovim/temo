@@ -22,18 +22,6 @@ Input {
   width: 2fr;
 }
 
-#results {
-  /* width: auto; */
-  /* min-height: 100%; */
-  /* padding: 0 1; */
-}
-
-#results-container {
-  /* background: $background 50%; */
-  /* overflow: hidden auto; */
-  /* border: tall $background; */
-}
-
-#results-container:focus {
-  /* border: tall $accent; */
+.btn-contract {
+  margin-top: 1;
 }
