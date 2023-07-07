@@ -1,0 +1,27 @@
+Screen {
+}
+
+.box {
+  height: auto;
+  margin: 1;
+  background: $panel;
+  color: $text;
+  border: tall $background;
+  padding: 1 2;
+  max-width: 100;
+}
+
+#search-ui {
+  width: 100%;
+  height: auto;
+  content-align: center middle;
+  margin-top: 1;
+}
+
+Input {
+  width: 2fr;
+}
+
+.btn-contract {
+  margin-top: 1;
+}
